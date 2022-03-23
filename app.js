@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
+const ERROR_DEFAULT = 500;
+
 const app = express();
 const { PORT = 3000 } = process.env;
 
@@ -22,7 +24,14 @@ app.use((req, res, next) => {
 app.use('/cards', routerCard);
 
 app.use('/users', routerUsers);
-app.use((req, res) => res.status(404).send({ message: 'Запрашиваемый ресурс не найден' }));
+
+app.use((err, req, res, next) => {
+  const { statusCode = ERROR_DEFAULT, message } = err;
+  res.status(statusCode).send(
+    { message: statusCode === ERROR_DEFAULT ? 'На сервере произошла ошибка' : message },
+  );
+  next();
+});
 
 app.listen(PORT, () => {
 });
