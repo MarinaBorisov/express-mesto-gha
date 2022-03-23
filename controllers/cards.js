@@ -1,5 +1,6 @@
 const NotFoundError = require('../errorModules/notFound');
 const ForbiddenError = require('../errorModules/forbidden');
+const BadRequestError = require('../errorModules/badRequest');
 
 const Card = require('../models/card');
 
@@ -9,7 +10,13 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => {
       res.send(card);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(`Некорректные данные ${err}`));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.getAllCards = (req, res, next) => {
@@ -39,7 +46,13 @@ module.exports.deleteCard = (req, res, next) => {
         })
         .catch(next);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Неправильный id'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -50,7 +63,13 @@ module.exports.likeCard = (req, res, next) => {
       }
       res.send(card);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Неправильный id'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -61,5 +80,11 @@ module.exports.dislikeCard = (req, res, next) => {
       }
       res.send(card);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Неправильный id'));
+      } else {
+        next(err);
+      }
+    });
 };
