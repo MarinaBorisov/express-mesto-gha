@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const NotFoundError = require('./errorModules/notFound');
 
 const ERROR_DEFAULT = 500;
 
@@ -24,7 +25,9 @@ app.use((req, res, next) => {
 app.use('/cards', routerCard);
 
 app.use('/users', routerUsers);
-
+app.use((req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
+});
 app.use((err, req, res, next) => {
   const { statusCode = ERROR_DEFAULT, message } = err;
   res.status(statusCode).send(
