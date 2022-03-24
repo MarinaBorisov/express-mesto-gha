@@ -45,7 +45,7 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.editUserInfo = (req, res, next) => {
   const { name, about } = req.body;
-  User.findOneAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Запрашиваемый пользователь не найден');
@@ -63,7 +63,7 @@ module.exports.editUserInfo = (req, res, next) => {
 
 module.exports.editUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findOneAndUpdate(req.user._id, { avatar: `${avatar}` }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(req.user._id, { avatar: `${avatar}` }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Запрашиваемый пользователь не найден');
