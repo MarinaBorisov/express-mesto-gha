@@ -34,7 +34,13 @@ module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => res.send(user))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(`Некорректные данные ${err}`));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.editUserInfo = (req, res, next) => {
