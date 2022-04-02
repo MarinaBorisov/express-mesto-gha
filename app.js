@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { celebrate, Joi, errors } = require('celebrate');
 const NotFoundError = require('./errorModules/notFound');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -19,13 +20,26 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {});
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
 
-app.use(auth);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2),
+    avatar: Joi.string().required().min(2),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), createUser);
 
-app.use('/cards', routerCard);
-app.use('/users', routerUsers);
+app.use('/cards', auth, routerCard);
+app.use('/users', auth, routerUsers);
+app.use(errors());
 app.use('/', (req, res, next) => {
   next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
