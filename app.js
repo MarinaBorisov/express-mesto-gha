@@ -1,7 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const NotFoundError = require('./errorModules/notFound');
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 const ERROR_DEFAULT = 500;
 
@@ -15,19 +18,18 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: '62377f981940d76b1e3029a9',
-  };
-  next();
-});
+
+app.post('/signin', login);
+app.post('/signup', createUser);
+
+app.use(auth);
 
 app.use('/cards', routerCard);
-
 app.use('/users', routerUsers);
-app.use((req, res, next) => {
+app.use('/', (req, res, next) => {
   next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
+
 app.use((err, req, res, next) => {
   const { statusCode = ERROR_DEFAULT, message } = err;
   res.status(statusCode).send(

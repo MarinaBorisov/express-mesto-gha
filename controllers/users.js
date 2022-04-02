@@ -1,6 +1,12 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errorModules/notFound');
 const BadRequestError = require('../errorModules/badRequest');
+const ConflictError = require('../errorModules/conflict');
+
+const { NODE_ENV, JWT_SECRET } = process.env;
+const key = NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret-key';
 
 module.exports.getAllUsers = (req, res, next) => {
   User.find({})
@@ -31,12 +37,26 @@ module.exports.getUser = (req, res, next) => {
 };
 
 module.exports.createUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.send(user))
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email,
+      password: hash,
+      name,
+      about,
+      avatar,
+    }))
+    .then(() => res.send({
+      email, name, about, avatar,
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(`Некорректные данные ${err}`));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует'));
       } else {
         next(err);
       }
@@ -77,4 +97,22 @@ module.exports.editUserAvatar = (req, res, next) => {
         next(err);
       }
     });
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, key);
+
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send({ message: `Добро пожаловать: ${user.name}` });
+    })
+    .catch(next);
 };
