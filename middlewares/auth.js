@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
     return;
   }
 
-  const token = req.cookies.jwt;
+  const token = req.cookies.jwt.trim();
   let payload;
 
   try {
