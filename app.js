@@ -45,7 +45,6 @@ app.use('/cards', auth, routerCard);
 app.use('/users', auth, routerUsers);
 app.use(errors());
 app.use('/', (req, res, next) => {
-  res.clearCookie('jwt');
   next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 
