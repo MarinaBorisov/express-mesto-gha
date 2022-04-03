@@ -4,6 +4,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errorModules/notFound');
 const BadRequestError = require('../errorModules/badRequest');
 const ConflictError = require('../errorModules/conflict');
+const UnauthorizedError = require('../errorModules/unauthorized');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 const key = NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret-key';
@@ -104,7 +105,7 @@ module.exports.login = (req, res, next) => {
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, key);
+      const token = jwt.sign({ _id: user._id }, key, { expiresIn: '7d' });
 
       res
         .cookie('jwt', token, {
@@ -114,5 +115,7 @@ module.exports.login = (req, res, next) => {
         })
         .send({ message: `Добро пожаловать: ${user.name}` });
     })
-    .catch(next);
+    .catch(() => {
+      next(new UnauthorizedError('Неправильные почта или пароль'));
+    });
 };
