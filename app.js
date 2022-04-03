@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
 const NotFoundError = require('./errorModules/notFound');
 const { login, createUser } = require('./controllers/users');
@@ -11,6 +12,8 @@ const ERROR_DEFAULT = 500;
 
 const app = express();
 const { PORT = 3000 } = process.env;
+
+app.use(cookieParser());
 
 const { routerCard } = require('./routes/cards');
 const { routerUsers } = require('./routes/users');
