@@ -1,4 +1,4 @@
-const ERROR_CONFLICT = 404;
+const ERROR_CONFLICT = 409;
 
 class ConflictError extends Error {
   constructor(message) {
