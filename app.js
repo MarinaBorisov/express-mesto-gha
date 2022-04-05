@@ -8,7 +8,8 @@ const NotFoundError = require('./errorModules/notFound');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 
-const regexp = /(https?:\/\/)(w{3}\.)?(((\d{1,3}\.){3}\d{1,3})|((\w-?)+\.(ru|com)))(:\d{2,5})?((\/.+)+)?\/?#?/;
+const regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+
 const ERROR_DEFAULT = 500;
 
 const app = express();
@@ -27,7 +28,7 @@ app.use(bodyParser.json());
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
   }),
 }), login);
 
@@ -37,14 +38,14 @@ app.post('/signup', celebrate({
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().min(2).pattern(regexp),
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required(),
   }),
 }), createUser);
 
 app.use('/cards', auth, routerCard);
 app.use('/users', auth, routerUsers);
 app.use(errors());
-app.use('/', (req, res, next) => {
+app.use('/', auth, (req, res, next) => {
   next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 

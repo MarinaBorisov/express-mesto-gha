@@ -37,6 +37,23 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Текущий пользователь не найден');
+      }
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Неправильный id'));
+      } else {
+        next(err);
+      }
+    });
+};
+
 module.exports.createUser = (req, res, next) => {
   const {
     email, password, name, about, avatar,

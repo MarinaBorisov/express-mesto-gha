@@ -1,4 +1,3 @@
-/* eslint-disable no-multiple-empty-lines */
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
@@ -14,8 +13,6 @@ const cardSchema = new mongoose.Schema({
   },
   owner: {
     required: true,
-    minlength: 2,
-    maxlength: 30,
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
   },
