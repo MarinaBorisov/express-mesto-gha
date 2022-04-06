@@ -2,10 +2,10 @@ const routerUsers = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
 const {
-  getAllUsers, getCurrentUser, getUser, createUser, editUserInfo, editUserAvatar,
+  getAllUsers, getCurrentUser, getUser, editUserInfo, editUserAvatar,
 } = require('../controllers/users');
 
-const regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+const { linkValidator } = require('../validators/linkValidator');
 
 Joi.objectId = require('joi-objectid')(Joi);
 
@@ -13,18 +13,10 @@ routerUsers.get('/', getAllUsers);
 routerUsers.get('/me', getCurrentUser);
 routerUsers.get('/:_id', celebrate({
   params: Joi.object().keys({
-    userId: Joi.objectId(),
+    _id: Joi.objectId(),
   }),
 }), getUser);
-routerUsers.post('/', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().min(2).pattern(regexp),
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
-}), createUser);
+
 routerUsers.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
@@ -33,7 +25,7 @@ routerUsers.patch('/me', celebrate({
 }), editUserInfo);
 routerUsers.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().pattern(regexp),
+    avatar: Joi.string().required().custom(linkValidator),
   }),
 }), editUserAvatar);
 

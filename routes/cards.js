@@ -1,7 +1,7 @@
 const routerCard = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
-const regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+const { linkValidator } = require('../validators/linkValidator');
 
 Joi.objectId = require('joi-objectid')(Joi);
 
@@ -13,7 +13,7 @@ routerCard.get('/', getAllCards);
 routerCard.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().pattern(regexp),
+    link: Joi.string().custom(linkValidator),
   }),
 }), createCard);
 routerCard.delete('/:cardId', celebrate({
